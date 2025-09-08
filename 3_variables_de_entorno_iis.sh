@@ -1,28 +1,41 @@
-#!/usr/bin/env bash
-# Script: 3_env_setup.sh
-# Objetivo:
-#  1) umask 022
-#  2) export IBM_JAVA_OPTIONS=
-#  3) unset -f which
-#  4) set | grep -i func
-#  5) set | grep -i which
+#!/bin/bash
+# 3_variables_de_entorno_iis.sh
+# Ejecuta el instalador con entorno limpio, umask 022 e IBM_JAVA_OPTIONS vacío.
 
-# 1) Establecer umask
-echo ">> umask 022"
-umask 022
+set -euo pipefail
 
-# 2) Limpiar IBM_JAVA_OPTIONS (dejarla definida pero vacía)
-echo ">> export IBM_JAVA_OPTIONS="
-export IBM_JAVA_OPTIONS=
+if [[ $# -lt 1 ]]; then
+  echo "Uso: $0 /ruta/al/setup [args...]"
+  exit 2
+fi
 
-# 3) Eliminar función 'which' si existe (no afecta binarios/aliases)
-echo ">> unset -f which"
-unset -f which 2>/dev/null || true
+INSTALLER="$1"; shift
+if [[ ! -x "$INSTALLER" ]]; then
+  echo "Error: $INSTALLER no existe o no es ejecutable."
+  exit 1
+fi
 
-# 4) Mostrar funciones (búsqueda por 'func' en la salida de 'set')
-echo ">> set | grep -i func"
-set | grep -i func || true
+# PATH mínimo
+MIN_PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-# 5) Mostrar coincidencias con 'which' en la salida de 'set'
-echo ">> set | grep -i which"
-set | grep -i which || true
+echo "Entorno limpio listo. Ejecutando instalador..."
+echo "Comando: $INSTALLER ${*:-}"
+
+# Lanza un bash con entorno vacío; pasa el instalador como $0 y los args como $@
+exec /usr/bin/env -i \
+  PATH="$MIN_PATH" \
+  HOME="${HOME:-/root}" \
+  LANG="en_US.UTF-8" \
+  LC_ALL="en_US.UTF-8" \
+  IBM_JAVA_OPTIONS="" \
+  /bin/bash -c ' \
+    set -euo pipefail
+    umask 022
+    # Comprobación defensiva: no debe haber funciones exportadas
+    if env | grep -q "^BASH_FUNC_"; then
+      echo "ERROR: aún hay BASH_FUNC_* en el entorno:"
+      env | grep "^BASH_FUNC_"
+      exit 1
+    fi
+    exec "$0" "$@"
+  ' "$INSTALLER" "$@"
