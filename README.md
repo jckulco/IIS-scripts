@@ -14,4 +14,5 @@ b. Ejecutar en orden
 c. Cuando se ejecute el script 2 (2_instalar_librerias_iis.sh), recomendable ejecutar en otra ventana del servidor:
    tail -f /var/log/dnf.log
 
-d. Tras ejecutar correctamente, iniciar instalación de IBM InfoSphere Information Server
+d. Tras ejecutar correctamente, iniciar instalación de IBM InfoSphere Information Server del siguiente modo: 
+   ./3_variables_de_entorno_iis.sh /opt/is-suite/setup -uiMode graphical
