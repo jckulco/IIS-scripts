@@ -203,6 +203,7 @@ PKGS_UNIFICADOS=(
   nss-softokn-freebl perl-Net-Ping.noarch
   bc lsof net-tools
   ed
+  unzip chkconfig
 )
 
 install_best_effort "Paquetes base unificados" "${PKGS_UNIFICADOS[@]}"
